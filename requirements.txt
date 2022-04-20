@@ -1,9 +1,9 @@
 xarray
-pandas>=1.4.1
-holoviews>=1.14.8
-panel>=0.12.6
-thredds_crawler>=1.5.4
-numpy>=1.22.3
-bokeh>=2.4.2
-netCDF4>=1.5.8
-matplotlib>=3.5.1
+pandas
+holoviews
+panel
+thredds_crawler
+numpy
+bokeh
+netCDF4
+matplotlib

@@ -22,3 +22,4 @@ Libraries used:
   - datetime 
   - matplotlib 3.5.1
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/johtj/yopp_vis_tools/HEAD)

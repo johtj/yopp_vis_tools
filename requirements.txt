@@ -1,4 +1,4 @@
-xarray>=2022.3.0
+xarray
 pandas>=1.4.1
 holoviews>=1.14.8
 panel>=0.12.6

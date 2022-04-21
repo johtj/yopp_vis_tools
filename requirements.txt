@@ -1,0 +1,10 @@
+xarray
+pandas
+holoviews
+panel
+thredds_crawler
+numpy
+bokeh
+netCDF4
+matplotlib
+dask

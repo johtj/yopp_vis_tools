@@ -1,3 +1,5 @@
 *.nc
 .ipynb_checkpoints
 .ipynb_checkpoints/**
+__pycache__/
+get_data.py~

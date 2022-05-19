@@ -9,7 +9,7 @@ from functools import partial
 #takes the specifications of what should be loaded, generates a list of the relevant urls
 #then sorts that list based on the given daterange.
 def get_urls(start_date,end_date,start_time,model_name,site_name,variable,concat_day):
-    
+
     #format the start and end date like it appears in the file names
     sd_concat = start_date.strftime("%Y-%m-%d").replace('-','')
     ed_concat = end_date.strftime("%Y-%m-%d").replace('-','')
@@ -57,10 +57,18 @@ def get_urls(start_date,end_date,start_time,model_name,site_name,variable,concat
 #takes one day from each file to concatenated while opening in get data
 #the day selection is given to the user
 def day_sel(xarray,concat_day):
+    xarray = prep_data(xarray)
     shift = np.timedelta64((24),'h')*concat_day
     start_time = xarray['time'][0].values+shift
     end_time = start_time+np.timedelta64((24),'h')
     xarray = xarray.sel(time=slice(start_time,end_time))
+    return xarray
+
+#handles discrepancies between the files, thus far only if there exists an
+#extra dim for latitude and longitude. In this case it is removed.
+def prep_data(xarray):
+    if 'lat' in xarray.dims and 'lon' in xarray.dims:
+        xarray = xarray.isel(lat=0,lon=0)
     return xarray
 
 def get_model_data(out_type,urls,concat_day):
@@ -72,7 +80,7 @@ def get_model_data(out_type,urls,concat_day):
                               preprocess=partial(day_sel,concat_day=concat_day)
         ).to_dataframe() 
     else:
-        df = xr.open_mfdataset(urls,concat_dim=['stime'],combine='nested').to_dataframe()
+        df = xr.open_mfdataset(urls,concat_dim=['stime'],combine='nested',preprocess=prep_data).to_dataframe()
         df = df.unstack()
   
     return df

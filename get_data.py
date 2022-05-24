@@ -71,20 +71,26 @@ def prep_data(xarray):
         xarray = xarray.isel(lat=0,lon=0)
     return xarray
 
+#handles the reading of model data from url, in either concatenated or stacked form
+#default is stacked
 def get_model_data(out_type,urls,concat_day):
    
     if out_type == 'concatenated':
+        #open concatenated dataset using preprocess passing the argument of 
+        #which day should be used through partial
         df=xr.open_mfdataset(urls,
                               concat_dim=['time'],
                               combine='nested',
                               preprocess=partial(day_sel,concat_day=concat_day)
         ).to_dataframe() 
     else:
+        #open stacked dataset
         df = xr.open_mfdataset(urls,concat_dim=['stime'],combine='nested',preprocess=prep_data).to_dataframe()
         df = df.unstack()
   
     return df
 
+#handles reading observation data from url
 def get_obs_data(url, start_date,end_date,variable):
 
     df = xr.open_dataset(url)[variable].to_dataframe()

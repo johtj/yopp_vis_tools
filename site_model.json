@@ -1,0 +1,15 @@
+{
+    "sodankyla": {
+	"ifs-ecmwf":[],
+	"slav-rhmc":[],
+	"icon-dwd":[],
+	"AROME-Arctic":[]
+    },
+    "tiksi": {
+	"ifs-ecmwf":[],
+	"slav-rhmc":[]
+    },
+    "nyalesund":{
+	"ifs-ecmwf":[]
+    }
+}

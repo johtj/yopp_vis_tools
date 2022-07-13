@@ -21,7 +21,12 @@ def get_urls(start_date,end_date,start_time,model_name,site_name,variable,concat
     
     bracket_urls =[]
     urls_mod = []
-    
+
+    if len(variable) > 1:
+        variable = ','.join(variable)
+    else:
+        variable = variable[0]
+        
     #create add on string for the urls with variable selection
     select_vars = "?time," + variable
     
@@ -59,8 +64,9 @@ def get_urls(start_date,end_date,start_time,model_name,site_name,variable,concat
 def day_sel(xarray,concat_day):
     xarray = prep_data(xarray)
     shift = np.timedelta64((24),'h')*concat_day
+    t_step = xarray['time'][1].values - xarray['time'][0].values
     start_time = xarray['time'][0].values+shift
-    end_time = start_time+np.timedelta64((24),'h')
+    end_time = start_time+np.timedelta64((24),'h')-t_step
     xarray = xarray.sel(time=slice(start_time,end_time))
     return xarray
 

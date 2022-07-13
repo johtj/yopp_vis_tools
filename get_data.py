@@ -103,3 +103,30 @@ def get_obs_data(url, start_date,end_date,variable):
     df = df[start_date:end_date]
 
     return df
+
+def get_height_vars(model):
+    if model == 'slav-rhmc':
+        variables = ["zg","orog"] 
+    elif model == 'icon-dwd':
+        variables = ['hfull','orog']
+    elif model == 'ECCC-CAPS':
+        variables = ['zg']
+    elif model in 'AROME-Arctic':
+        variables = ['zg']
+    else:
+        variables = ['zg','zghalf']
+    return variables
+
+def calc_model_height(model,data):
+    if model == "slav-rhmc":
+        data['height']=data['zg']-data['Orog'] 
+    elif model == 'icon-dwd':
+        data['height']=data['hfull']-data['orog']
+    elif model == 'ECCC-CAPS':
+        data['height'] = 10.0*data['zg']
+    elif model == 'AROME-Arctic':
+        data['height'] = data['zg']
+    else:
+        data['height'] = data['zg'] - data['zghalf'][:, -1]
+
+    return data

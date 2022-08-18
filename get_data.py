@@ -8,7 +8,7 @@ from functools import partial
 
 #takes the specifications of what should be loaded, generates a list of the relevant urls
 #then sorts that list based on the given daterange.
-def get_urls(start_date,end_date,start_time,model_name,site_name,variable,concat_day):
+def get_urls_mod(start_date,end_date,start_time,model_name,site_name,variable,concat_day):
 
     #format the start and end date like it appears in the file names
     sd_concat = start_date.strftime("%Y-%m-%d").replace('-','')
@@ -57,7 +57,30 @@ def get_urls(start_date,end_date,start_time,model_name,site_name,variable,concat
     #only use the urls that are between the dates given
     urls_mod = urls_mod[start_index:end_index+1]
     url_obs = "sodankyla_obs_2018-02-01_to_2018-03-31.nc"
-    return urls_mod, url_obs
+    return urls_mod
+
+def get_urls_obs(site_name, ftype,sop):
+    url_base = "https://thredds.met.no/thredds/catalog/alertness/YOPP_supersite/obs/"
+
+    url = url_base+site_name+"/catalog.html"
+    regex = ".*"+ftype+"_.*"
+
+    c = Crawl(url, select=[regex])
+
+    if sop == "1":
+        sop_start = "20180201"
+    else:
+        sop_start = "20180701"
+
+        
+  
+    obs_url = ""
+    for d in c.datasets:
+        for s in d.services:
+            if s.get("service").lower() == "opendap" and sop_start in d.name:
+                obs_url = s.get("url")
+    
+    return obs_url
 
 #takes one day from each file to concatenated while opening in get data
 #the day selection is given to the user
@@ -84,25 +107,25 @@ def get_model_data(out_type,urls,concat_day):
     if out_type == 'concatenated':
         #open concatenated dataset using preprocess passing the argument of 
         #which day should be used through partial
-        df=xr.open_mfdataset(urls,
+        ds=xr.open_mfdataset(urls,
                               concat_dim=['time'],
                               combine='nested',
                               preprocess=partial(day_sel,concat_day=concat_day)
-        ).to_dataframe() 
+        )
     else:
         #open stacked dataset
-        df = xr.open_mfdataset(urls,concat_dim=['stime'],combine='nested',preprocess=prep_data).to_dataframe()
-        df = df.unstack()
+        ds = xr.open_mfdataset(urls,concat_dim=['stime'],combine='nested',preprocess=prep_data).to_dataframe()
+        #df = df.unstack()
   
-    return df
+    return ds
 
 #handles reading observation data from url
 def get_obs_data(url, start_date,end_date,variable):
 
-    df = xr.open_dataset(url)[variable].to_dataframe()
-    df = df[start_date:end_date]
-
-    return df
+    ds = xr.open_dataset(url)
+   # ds = ds.sel((start_date:end_date))
+    ds = ds[variable]
+    return ds
 
 def get_height_vars(model):
     if model == 'slav-rhmc':

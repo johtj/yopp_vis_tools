@@ -114,8 +114,8 @@ def get_model_data(out_type,urls,concat_day):
         )
     else:
         #open stacked dataset
-        ds = xr.open_mfdataset(urls,concat_dim=['stime'],combine='nested',preprocess=prep_data).to_dataframe()
-        #df = df.unstack()
+        ds = xr.open_mfdataset(urls,concat_dim=['stime'],combine='nested',preprocess=prep_data)
+        
   
     return ds
 

@@ -13,9 +13,21 @@ def get_urls_mod(start_date,end_date,start_time,model_name,site_name,variable,co
     #format the start and end date like it appears in the file names
     sd_concat = start_date.strftime("%Y-%m-%d").replace('-','')
     ed_concat = end_date.strftime("%Y-%m-%d").replace('-','')
-     
-    #filter urls based on start time, and load in a list
-    regex = ".*"+start_time+"\.nc"
+    
+    #format for regex
+    start_year,start_month,start_day = start_date.strftime("%Y-%m-%d").split("-")#.replace('-','')
+    end_year,end_month,end_day = end_date.strftime("%Y-%m-%d").split("-")#.replace('-','')
+    
+    #regex ================================================================
+    month_diff = int(end_month[-1]) - int(start_month[-1]) 
+    
+    if month_diff == 2:
+        mid_month = "0"+str(int(start_month[-1])+1)
+        regex = ".*"+"_"+"("+start_year+"|"+end_year+")"+"("+start_month+"|"+mid_month+"|"+end_month+")"+".."+start_time+"\.nc"
+    else:
+        regex = ".*"+"_"+"("+start_year+"|"+end_year+")"+"("+start_month+"|"+end_month+")"+".."+start_time+"\.nc"
+    #===================================================================
+
     url = "https://thredds.met.no/thredds/catalog/alertness/YOPP_supersite/"+model_name+"/"+site_name+"/catalog.html"
     c = Crawl(url, select=[regex])
     

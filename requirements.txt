@@ -5,6 +5,7 @@ panel
 thredds_crawler
 numpy
 bokeh
-netCDF4
+netCDF4==1.5.8
 matplotlib
 dask
+scipy

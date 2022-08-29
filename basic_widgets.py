@@ -75,7 +75,7 @@ def create_widgets(site_mod_dict):
     dates = pn.widgets.DateRangeSlider(
         name='Date Range Slider',
         start=dt.datetime(2018, 2, 2), end=dt.datetime(2018, 3, 31),
-        value=(dt.datetime(2018, 2, 2), dt.datetime(2018, 2, 10))
+        value=(dt.datetime(2018, 2, 2), dt.datetime(2018, 2, 4))
     )
 
     #widgets that remain constant regardless of model selected=================================

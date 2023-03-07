@@ -1,6 +1,5 @@
 import xarray as xr
 import panel as pn
-from thredds_crawler.crawl import Crawl
 import datetime as dt
 import functools as fn
 import json

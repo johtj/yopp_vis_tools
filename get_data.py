@@ -2,7 +2,6 @@ import xarray as xr
 import pandas as pd
 import panel as pn
 import numpy as np
-from thredds_crawler.crawl import Crawl
 import datetime as dt
 from functools import partial
 
@@ -39,23 +38,13 @@ def get_urls_mod(start_date,end_date,start_time,model_name,site_name,variable_li
 
 
 def get_urls_obs(site_name, ftype,sop):
-    url_base = "https://thredds.met.no/thredds/catalog/alertness/YOPP_supersite/obs/"
-
-    url = url_base+site_name+"/catalog.html"
-    regex = ".*"+ftype+"_.*"
-
-    c = Crawl(url, select=[regex])
+    url_base = "https://thredds.met.no/thredds/dodsC/alertness/YOPP_supersite/obs/"
 
     if sop == "1":
-        sop_start = "20180201"
-    else:
-        sop_start = "20180701"  
-  
-    obs_url = ""
-    for d in c.datasets:
-        for s in d.services:
-            if s.get("service").lower() == "opendap" and sop_start in d.name:
-                obs_url = s.get("url")
+        obs_url = url_base+site_name+"/"+site_name+"_obs_"+ftype+"_20180201_20180331.nc?"
+    elif sop == "2":
+        obs_url = url_base+site_name+"/"+site_name+"_obs_"+ftype+"_20180201_20180331.nc"
+    
     return obs_url
 
 #takes one day from each file to concatenated while opening in get data
@@ -78,33 +67,33 @@ def prep_data(xarray):
 
 #handles the reading of model data from url, in either concatenated or stacked form
 #default is stacked
-def get_data(out_type,urls,concat_day):
+def get_data(out_type,urls,concat_day,read_type):
     
     try:
         if out_type == 'concatenated':
             #open concatenated dataset using preprocess passing the argument of 
             #which day should be used through partial
             ds=xr.open_mfdataset(urls,
-                                  concat_dim=['time'],
-                                  combine='nested',
-                                  preprocess=partial(day_sel,concat_day=concat_day)
+                                concat_dim=['time'],
+                                combine='nested',
+                                preprocess=partial(day_sel,concat_day=concat_day)
             )
         elif out_type == 'observation':
-            ds = xr.open_mfdataset(urls)
+            ds = xr.open_dataset(urls)
         else:
             #open stacked dataset
             ds = xr.open_mfdataset(urls,concat_dim=['stime'],combine='nested',preprocess=prep_data)
-      
+
     
     except ValueError:
-        return xr.Dataset, "Error reading model data, value error occured"
+        return xr.Dataset, "Error reading " + read_type +" data, value error occured"
     except OSError as ex:
         if ex.errno == -77:
-            return xr.Dataset, "Error reading model data, OS error occurred, variable not in dataset."
+            return xr.Dataset, "Error reading " + read_type +" data, OS error occurred, variable not in dataset."
         else:
-            return xr.Dataset, "Error reading model data, OS error occured: "+str(ex.errno)
+            return xr.Dataset, "Error reading " + read_type +" data, OS error occured: "+str(ex.errno)
     except:
-        return xr.Dataset, "Error reading model data."
+        return xr.Dataset, "Error reading " + read_type +"."
             
     return ds, None
 

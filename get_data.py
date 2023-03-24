@@ -41,7 +41,7 @@ def get_urls_obs(site_name, ftype,sop):
     url_base = "https://thredds.met.no/thredds/dodsC/alertness/YOPP_supersite/obs/"
 
     if sop == "1":
-        obs_url = url_base+site_name+"/"+site_name+"_obs_"+ftype+"_20180201_20180331.nc?"
+        obs_url = url_base+site_name+"/"+site_name+"_obs_"+ftype+"_20180201_20180331.nc"
     elif sop == "2":
         obs_url = url_base+site_name+"/"+site_name+"_obs_"+ftype+"_20180201_20180331.nc"
     
@@ -90,17 +90,19 @@ def get_data(out_type,urls,concat_day,read_type):
     except OSError as ex:
         if ex.errno == -77:
             return xr.Dataset, "Error reading " + read_type +" data, OS error occurred, variable not in dataset."
+        elif ex.errno == -90:
+            return xr.Dataset, "Error reading " + read_type + " : "+ ex.args[1]
         else:
             return xr.Dataset, "Error reading " + read_type +" data, OS error occured: "+str(ex.errno)
-    except:
-        return xr.Dataset, "Error reading " + read_type +"."
+    except Exception as ex:
+        return xr.Dataset, "Error reading " + read_type +". Error: "+ex
             
     return ds, None
 
 
 def get_height_vars(model):
     if model == 'slav-rhmc':
-        variables = ["zg","orog"] 
+        variables = ["zg","Orog"] 
     elif model == 'icon-dwd':
         variables = ['hfull','orog']
     elif model == 'ECCC-CAPS':

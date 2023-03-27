@@ -6,7 +6,7 @@ import datetime as dt
 from functools import partial
 
 
-def get_urls_mod(start_date,end_date,start_time,model_name,site_name,variable_list,concat_day):
+def get_urls_mod(start_date,end_date,start_time,model_name,site_name,variable_list,concat_day=0):
     
     if concat_day == 2:
         start_date  = start_date-dt.timedelta(days=2) 
@@ -67,7 +67,7 @@ def prep_data(xarray):
 
 #handles the reading of model data from url, in either concatenated or stacked form
 #default is stacked
-def get_data(out_type,urls,concat_day,read_type):
+def get_data(out_type,urls,read_type,concat_day=0):
     
     try:
         if out_type == 'concatenated':

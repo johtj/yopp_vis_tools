@@ -5,14 +5,20 @@ import numpy as np
 import datetime as dt
 from functools import partial
 
+"""This file contains the functions responsible for fetching data via Thredds using OPeNDAP 
+   from the YOPP data portal hosted by MetNorway. 
+"""
 
+#creates urls for model data
 def get_urls_mod(start_date,end_date,start_time,model_name,site_name,variable_list,concat_day=0):
     
     if concat_day == 2:
         start_date  = start_date-dt.timedelta(days=2) 
     elif concat_day == 1:
         start_date  = start_date-dt.timedelta(days=1)
-   
+    
+    if site_name == "utqiagvik":
+        site_name = "barrow"
     #generate string bases
     base = "https://thredds.met.no/thredds/dodsC/alertness/YOPP_supersite/"+model_name+"/"+site_name+"/"
     file_name_start = site_name+"_"+model_name+"_"
@@ -36,7 +42,7 @@ def get_urls_mod(start_date,end_date,start_time,model_name,site_name,variable_li
    
     return urls
 
-
+#creates urls for observational data 
 def get_urls_obs(site_name, ftype,sop):
     url_base = "https://thredds.met.no/thredds/dodsC/alertness/YOPP_supersite/obs/"
 
@@ -48,7 +54,7 @@ def get_urls_obs(site_name, ftype,sop):
     return obs_url
 
 #takes one day from each file to concatenated while opening in get data
-#the day selection is given to the user
+#the day selection is given to the user, used by get_data
 def day_sel(xarray,concat_day):
     xarray = prep_data(xarray)
     shift = np.timedelta64((24),'h')*concat_day
@@ -58,15 +64,21 @@ def day_sel(xarray,concat_day):
     xarray = xarray.sel(time=slice(start_time,end_time))
     return xarray
 
-#handles discrepancies between the files, thus far only if there exists an
-#extra dim for latitude and longitude. In this case it is removed.
+#handles discrepancies between the files.
+#If there exists an extra dim(s) for latitude and longitude it is removed. 
+#Same in the case using station_id for indexing of multiple points.
+#used by get_data
 def prep_data(xarray):
     if 'lat' in xarray.dims and 'lon' in xarray.dims:
         xarray = xarray.isel(lat=0,lon=0)
+    elif 'station_id' in xarray.dims:
+        xarray = xarray.isel(station_id=0)
     return xarray
 
-#handles the reading of model data from url, in either concatenated or stacked form
-#default is stacked
+#handles the reading of model or observational data from url.
+#for the model case it is either in either concatenated or stacked form, the default case is stacked
+#in the concatenated case a concatination day is either given in the function call
+#or default set to the first day.
 def get_data(out_type,urls,read_type,concat_day=0):
     
     try:
@@ -99,7 +111,8 @@ def get_data(out_type,urls,read_type,concat_day=0):
             
     return ds, None
 
-
+#handles the difference in naming for the height variables
+#accounts for lack of standard in current model files
 def get_height_vars(model):
     if model == 'slav-rhmc':
         variables = ["zg","Orog"] 
@@ -113,6 +126,8 @@ def get_height_vars(model):
         variables = ['zg','zghalf']
     return variables
 
+#handles the calculation of height variables in the different 
+#model cases
 def calc_model_height(model,data):
     if model == "slav-rhmc":
         data['height']=data['zg']-data['Orog'] 
@@ -126,3 +141,23 @@ def calc_model_height(model,data):
         data['height'] = data['zg'] - data['zghalf'][:, -1]
 
     return data
+
+def dims_sonde_obs(site_name):
+
+    if site_name in ['sodankyla','tiksi','eureka']:
+        height_dim = None
+        time_dim = None
+        return height_dim,time_dim
+    elif site_name == 'utqiagvik':
+        height_dim = 'hgt_sonde'
+        time_dim = 'time_release_sonde'
+        return height_dim,time_dim
+    elif site_name == 'whitehorse' or site_name == 'iqaluit':
+        height_dim = 'height_sonde'
+        time_dim = 'time'
+        return height_dim,time_dim
+    elif site_name == 'nyalesund':
+        height_dim = 'hgt_sonde'
+        time_dim = 'time_nominal'
+        return height_dim,time_dim
+        
